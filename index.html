@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Md Maksudul Haque Rishad · Portfolio</title>
+<meta name="description" content="Md Maksudul Haque Rishad, Computer Engineering student at Texas Tech University focused on embedded firmware, sensors and in vehicle networks.">
+<link rel="canonical" href="https://rishadrenegade.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rishadrenegade.github.io/">
+<meta property="og:title" content="Md Maksudul Haque Rishad · Computer Engineering Portfolio">
+<meta property="og:description" content="Computer Engineering student at Texas Tech University. Embedded projects, sensor drivers, certificates and the 1st place RoadRebound win at the IBTTA On-Ramp Innovation Challenge 2026.">
+<meta property="og:image" content="https://rishadrenegade.github.io/images/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta property="og:image:alt" content="Md Maksudul Haque Rishad portfolio cover">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rishadrenegade.github.io/images/og-cover.png">
+<meta name="author" content="Md Maksudul Haque Rishad">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20261125a">
+</head>
+<body>
+
+<header class="nav">
+  <a href="#home" class="logo"><span class="logo-gear"></span>RISHAD<span class="logo-dim">.dev</span></a>
+  <nav class="menu" id="menu">
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="#cad">Bench</a>
+    <a href="#skills">Skills</a>
+    <a href="#experience">Experience</a>
+    <a href="#certificates">Certificates</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span><span></span></button>
+</header>
+
+<aside class="gears" id="gears" aria-label="Section tracker"></aside>
+
+<main>
+  <!-- HERO -->
+  <section class="hero band" id="home" data-name="Home">
+    <div class="hero-text">
+      <p class="eyebrow" id="tagline"></p>
+      <h1 class="hero-name"><span id="firstName"></span><span id="lastName"></span></h1>
+      <p class="hero-sub"><span id="subtitle"></span><br><span id="grad" class="grad"></span></p>
+      <p class="hero-intro" id="intro"></p>
+      <div class="btns">
+        <a href="#projects" class="btn btn-solid">View projects</a>
+        <button type="button" class="btn btn-line js-resume" aria-haspopup="dialog">Request resume</button>
+        <a href="#contact" class="btn btn-line">Contact</a>
+        <a id="heroLinkedin" href="https://www.linkedin.com/in/rishadmhaque/" class="btn btn-line btn-in" target="_blank" rel="noopener" aria-label="LinkedIn profile">LinkedIn<span class="arr">↗</span></a>
+      </div>
+    </div>
+
+    <figure class="drawing">
+      <div class="disc" id="heroGear" aria-hidden="true"></div>
+      <div class="sheet">
+        <span class="dim dim-top"><i></i><b>SPI · I2C · UART</b><i></i></span>
+        <span class="dim dim-side"><i></i><b>3V3</b><i></i></span>
+        <span class="cross c1"></span><span class="cross c2"></span>
+        <img id="photo" alt="Portrait of Md Maksudul Haque Rishad">
+        <div class="titleblock">
+          <span><small>Built by</small>M. RISHAD</span>
+          <span><small>Dept</small>CPE·TTU</span>
+          <span><small>Rev</small>A</span>
+        </div>
+      </div>
+    </figure>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="band" id="about" data-name="About">
+    <p class="eyebrow num">01 · About</p>
+    <div class="about-grid">
+      <div>
+        <h2 class="big" id="aboutHeading"></h2>
+        <div id="aboutText" class="prose"></div>
+        <h3 class="mini">Focus areas</h3>
+        <ul class="focus" id="focus"></ul>
+      </div>
+      <aside class="facts card" id="facts"></aside>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section class="band band-dark" id="projects" data-name="Projects">
+    <p class="eyebrow num">02 · Selected projects</p>
+    <div class="spotlight" id="spotlight"></div>
+    <h2 class="big">Things I've built</h2>
+    <div class="projects" id="projectList"></div>
+    <h3 class="mini">Other projects</h3>
+    <div class="others" id="otherList"></div>
+  </section>
+
+  <!-- CAD WORK -->
+  <section class="band" id="cad" data-name="Bench">
+    <p class="eyebrow num">03 · On the bench</p>
+    <div class="cad-head">
+      <h2 class="big">Wired, flashed, tested</h2>
+      <div class="cad-filter" id="cadFilter"></div>
+    </div>
+    <div class="cad-grid" id="cadList"></div>
+    <div class="cad-more"><button class="btn btn-line" id="cadMore" hidden>Show all builds</button></div>
+  </section>
+
+  <!-- SKILLS -->
+  <section class="band" id="skills" data-name="Skills">
+    <p class="eyebrow num">04 · Skills</p>
+    <h2 class="big">What I work with</h2>
+    <div class="skill-grid" id="skillList"></div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="band" id="experience" data-name="Experience">
+    <p class="eyebrow num">05 · Experience</p>
+    <h2 class="big">Where I've worked</h2>
+    <div class="exp-grid">
+      <ol class="timeline" id="expList"></ol>
+    </div>
+  </section>
+
+  <!-- CERTIFICATES -->
+  <section class="band" id="certificates" data-name="Certificates">
+    <p class="eyebrow num">06 · Certificates</p>
+    <h2 class="big">Certified and counting</h2>
+    <div class="cert-grid" id="certList"></div>
+    <div class="cad-more"><button class="btn btn-line" id="certMore" hidden>Show more certificates</button></div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="band contact" id="contact" data-name="Contact">
+    <p class="eyebrow num">07 · Contact</p>
+    <h2 class="huge">Let's build<br>something <em>together</em></h2>
+    <p class="contact-sub">Open to Summer 2027 embedded or firmware internships and Fall 2027 co ops, especially in vehicle networks, sensing and robotics.</p>
+    <div class="btns">
+      <a id="emailBtn" class="btn btn-solid">Email me</a>
+      <a id="linkedinBtn" class="btn btn-line btn-arrow" target="_blank" rel="noopener">LinkedIn <span class="arr">↗</span></a>
+      <a id="githubBtn" href="https://github.com/rishadrenegade" class="btn btn-line btn-arrow" target="_blank" rel="noopener">GitHub <span class="arr">↗</span></a>
+      <button type="button" class="btn btn-line js-resume" aria-haspopup="dialog">Request resume</button>
+    </div>
+    <p class="email-text" id="emailText"></p>
+  </section>
+</main>
+
+<div class="modal" id="resumeModal" hidden role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
+  <div class="modal-card">
+    <button class="modal-x" id="resumeClose" aria-label="Close">×</button>
+    <span class="modal-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg></span>
+    <h3 id="resumeTitle">Want my resume?</h3>
+    <p>Message me on LinkedIn or send an email at <b id="resumeEmail">rishadmhaque@gmail.com</b> and I'll send it over. Thanks!</p>
+    <div class="modal-btns">
+      <a class="btn btn-solid" id="resumeLinkedin" target="_blank" rel="noopener">Message on LinkedIn ↗</a>
+      <a class="btn btn-line" id="resumeMail">Send an email</a>
+    </div>
+    <button class="modal-copy" id="resumeCopy">Copy email address</button>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-close" id="lbClose" aria-label="Close">×</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous image">‹</button>
+  <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next image">›</button>
+</div>
+
+<footer class="footer">
+  <span>RISHAD.dev</span>
+  <span class="foot-links">
+    <a id="fLinkedin" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <a id="fGithub" href="https://github.com/rishadrenegade" target="_blank" rel="noopener">GitHub ↗</a>
+    <a id="fEmail">Email</a>
+  </span>
+  <span>© <span id="year"></span> Md Maksudul Haque Rishad</span>
+</footer>
+
+<script src="data.js?v=20261125a"></script>
+<script src="script.js?v=20261125a"></script>
+</body>
+</html>
