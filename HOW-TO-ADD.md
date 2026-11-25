@@ -120,7 +120,7 @@ Your intro, about text, quick facts, skills, experience and the RoadRebound spot
 
 ## Your photo
 
-Upload a square headshot to `images/` named `rishad.jpg` (replace the placeholder). About 800 × 800 pixels is plenty.
+To change your photo, upload a square headshot to `images/` named `rishad.jpg` (it replaces the current one). About 800 × 800 pixels is plenty.
 
 ## Resume
 

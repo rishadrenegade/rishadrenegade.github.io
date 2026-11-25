@@ -50,10 +50,10 @@
   const placeholder = (i, num) => `
     <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs><pattern id="g${i}" width="20" height="20" patternUnits="userSpaceOnUse">
-        <path d="M20 0H0V20" fill="none" stroke="#243A31" stroke-width="1"/></pattern></defs>
+        <path d="M20 0H0V20" fill="none" stroke="#353B44" stroke-width="1"/></pattern></defs>
       <rect width="400" height="300" fill="url(#g${i})"/>
-      <g fill="none" stroke="#C98A55" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${glyphs[i % glyphs.length]}</g>
-      <text x="380" y="282" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#8FA89A">FIG. ${num}</text>
+      <g fill="none" stroke="#22D3EE" stroke-width="2" style="filter:drop-shadow(0 0 3px rgba(59,232,255,.6))" stroke-linecap="round" stroke-linejoin="round">${glyphs[i % glyphs.length]}</g>
+      <text x="380" y="282" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="12" fill="#7D848E">FIG. ${num}</text>
     </svg>`;
 
   if (SPOTLIGHT.show) {
@@ -117,8 +117,8 @@
       `<path d="M60 200h50l20-90 20 150 20-120 20 60h50l20-40 20 40h60"/><path d="M60 230h280" stroke-dasharray="4 6"/><text x="340" y="250" text-anchor="end">CH1 3.3 V</text>`,
       `<rect x="150" y="90" width="100" height="100" rx="6"/><path d="M160 90V60M180 90V60M200 90V60M220 90V60M240 90V60M160 190v30M180 190v30M200 190v30M220 190v30M240 190v30"/><path d="M240 60h70v160h-70" /><circle cx="310" cy="140" r="5"/><text x="200" y="255" text-anchor="middle">SPI · 4 MHz</text>`,
     ];
-    return `<svg viewBox="0 0 400 290" aria-hidden="true"><defs><pattern id="cg${i}" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" fill="none" stroke="#E2E7DE"/></pattern></defs>
-      <rect width="400" height="290" fill="url(#cg${i})"/><g fill="none" stroke="#B5652D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" font-family="JetBrains Mono, monospace" font-size="11">${shapes[i % shapes.length]}</g></svg>`;
+    return `<svg viewBox="0 0 400 290" aria-hidden="true"><defs><pattern id="cg${i}" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" fill="none" stroke="#DDE1E4"/></pattern></defs>
+      <rect width="400" height="290" fill="url(#cg${i})"/><g fill="none" stroke="#0891B2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" font-family="JetBrains Mono, monospace" font-size="11">${shapes[i % shapes.length]}</g></svg>`;
   };
   let cadType = "All", cadAll = false;
   const CAD_SHOW = 6;
@@ -303,35 +303,157 @@
   if (document.fonts) document.fonts.ready.then(alignHero);
 
   /* ---------- HERO GEAR ---------- */
-  /* silicon wafer: a disc of dies with a flat, slowly turning */
-  const wafer = (() => {
-    const R = 96, step = 13, dies = [];
-    for (let y = -R; y < R; y += step) for (let x = -R; x < R; x += step) {
-      const far = Math.max(Math.hypot(x, y), Math.hypot(x + step - 2, y), Math.hypot(x, y + step - 2), Math.hypot(x + step - 2, y + step - 2));
-      if (far < R - 4 && y + step < R - 14) dies.push(`<rect x="${(100 + x + 1).toFixed(1)}" y="${(100 + y + 1).toFixed(1)}" width="${step - 3}" height="${step - 3}" rx="1"/>`);
-    }
-    return `<clipPath id="wclip"><path d="M100 4 A96 96 0 1 1 99.9 4 Z"/></clipPath>
-      <circle cx="100" cy="100" r="98"/>
-      <g fill="#B5652D" fill-opacity=".38">${dies.join("")}</g>
-      <rect x="40" y="186" width="120" height="14" fill="var(--latte)"/>
-      <circle cx="100" cy="100" r="98" fill="none" stroke="#F2F4EE" stroke-opacity=".18" stroke-width="1.2"/>`;
-  })();
-  $("heroGear").innerHTML = `<svg viewBox="0 0 200 200" style="overflow:visible"><g id="gearBig">${wafer}</g></svg>`;
-  const gearSvg = $("heroGear").firstElementChild;
+  /* ---------- PCB TRACES ----------
+     One trace network for the whole page. It starts at the photo and keeps
+     bleeding down the page: as you scroll, the growth front follows the
+     bottom of the screen and the traces creep after it. Seeded, so it is the
+     same pattern on every visit. Glow is faked with a wide faint stroke under
+     a thin bright one, which stays smooth even on a long page. */
+  const layer = $("traceLayer");
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  /* rotate the whole picture on the graphics card, and ease scroll pushes in smoothly */
-  let angle = 0, boost = 0, lastY = window.scrollY, lastT = performance.now();
-  const setGears = () => { gearSvg.style.transform = `rotate(${angle.toFixed(2)}deg)`; };
-  setGears();
-  window.addEventListener("scroll", () => { boost += (window.scrollY - lastY) * 0.25; lastY = window.scrollY; }, { passive: true });
-  const spinGear = (t) => {
-    const dt = Math.min(t - lastT, 50); lastT = t;
-    const push = boost * 0.12; boost -= push;
-    angle = (angle + dt * 0.006 + push) % 360;
-    setGears();
-    requestAnimationFrame(spinGear);
+  let T = [], gate = [], R = 0, built = false;
+  const buildTraces = () => {
+    const photo = document.querySelector(".float");
+    if (!photo) return;
+    const pr = photo.getBoundingClientRect(), sy = window.scrollY;
+    const VW = document.documentElement.clientWidth;
+    layer.style.height = "0px";
+    const VH = document.documentElement.scrollHeight;
+    layer.style.height = VH + "px";
+    const mobile = VW <= 860;
+    const px0 = pr.left, py0 = pr.top + sy, px1 = pr.right, py1 = pr.bottom + sy;
+    const heroBottom = document.querySelector(".hero").getBoundingClientRect().bottom + sy;
+    const projTop = $("projects").getBoundingClientRect().top + sy;
+    const minX = (y) => (y < projTop ? px0 + 2 : 10);
+    let seed = 11;
+    const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const DIRS = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+    const paths = [];
+    const inside = (x, y) => x > 6 && x < VW - 6 && y > 6 && y < VH - 6;
+    const pick = (opts) => { let r = rnd() * opts.reduce((a, o) => a + o[1], 0); for (const o of opts) if ((r -= o[1]) <= 0) return o[0]; return opts[0][0]; };
+    /* a short burst around the photo */
+    const burst = (x, y, d, start, depth) => {
+      const pts = [[x, y]]; let dist = 0, dir = d;
+      const steps = 2 + Math.floor(rnd() * 3);
+      for (let k = 0; k < steps; k++) {
+        const v = DIRS[dir], u = Math.hypot(v[0], v[1]), len = (24 + rnd() * (depth ? 60 : 95)) / u;
+        const nx = x + v[0] * len, ny = y + v[1] * len;
+        if (!inside(nx, ny) || nx < minX(Math.max(y, ny))) break;
+        x = nx; y = ny; dist += len * u; pts.push([x, y]);
+        if (depth < 2 && rnd() < 0.3) burst(x, y, (dir + (rnd() < 0.5 ? 1 : 7)) % 8, start + dist, depth + 1);
+        dir = rnd() < 0.5 ? d : (dir + (rnd() < 0.5 ? 1 : 7)) % 8;
+      }
+      if (pts.length > 1) paths.push({ pts, start, len: dist, deep: false, pad: depth > 0 || rnd() < 0.4 });
+    };
+    /* a long trunk that wanders down the page and sheds side branches */
+    const trunk = (x, y, start, depth, life) => {
+      let dir = 2;
+      while (life-- > 0) {
+        const pts = [[x, y]]; let dist = 0;
+        const steps = 2 + Math.floor(rnd() * 3);
+        for (let k = 0; k < steps; k++) {
+          const lateral = x < Math.max(VW * 0.08, minX(y) + 40) ? [[1, 3], [0, 1]] : x > VW * 0.92 ? [[3, 3], [4, 1]] : [[1, 2], [3, 2], [0, depth ? 1.5 : 0.6], [4, depth ? 1.5 : 0.6]];
+          dir = pick([[2, 4], ...lateral]);
+          const v = DIRS[dir], u = Math.hypot(v[0], v[1]), len = (36 + rnd() * (dir === 2 ? 150 : 70)) / u;
+          const ny = y + v[1] * len, nx = Math.min(VW - 10, Math.max(minX(Math.min(y, ny)), x + v[0] * len));
+          if (ny > VH - 24) { life = 0; break; }
+          dist += Math.hypot(nx - x, ny - y); x = nx; y = ny; pts.push([x, y]);
+        }
+        if (pts.length < 2) break;
+        paths.push({ pts, start, len: dist, deep: pts[0][1] > heroBottom - 80, pad: false });
+        start += dist;
+        if (depth < 2 && rnd() < (depth ? 0.08 : 0.2)) trunk(x, y, start, depth + 1, depth ? 2 + Math.floor(rnd() * 3) : 4 + Math.floor(rnd() * 8));
+        if (depth && life === 0) paths[paths.length - 1].pad = true;
+      }
+      if (paths.length) paths[paths.length - 1].pad = true;
+    };
+    const gap = mobile ? 30 : 24;
+    for (let y = py0 + 16; y < py1 - 10; y += gap) { burst(px1 + 2, y, 0, 0, 0); }
+    for (let x = px0 + 16; x < px1 - 10; x += gap) { if (rnd() < 0.45) burst(x, py0 - 2, 6, 0, 0); burst(x, py1 + 2, 2, 0, 0); }
+    const trunks = mobile ? 4 : 7;
+    for (let t = 0; t < trunks; t++) trunk(px0 + ((t + 0.5) / trunks) * (px1 - px0), py1 + 2, 0, 0, 999);
+    /* side trunks so the left of the page bleeds too */
+    if (!mobile) {
+      /* start them at the network distance already reached at that height, so they grow in step */
+      const s0 = Math.max(0, ...paths.filter((p) => p.pts[0][1] <= projTop).map((p) => p.start));
+      trunk(24, projTop + 10, s0, 1, 999); trunk(px0 * 0.45, projTop + 10, s0, 1, 999);
+    }
+
+    const dStr = (p) => "M" + p.pts.map((q) => q[0].toFixed(1) + " " + q[1].toFixed(1)).join(" L");
+    layer.innerHTML = `<svg width="${VW}" height="${VH}" viewBox="0 0 ${VW} ${VH}">
+      <g class="halo">${paths.map((p) => `<path class="${p.deep ? "deep" : ""}" d="${dStr(p)}"/>`).join("")}</g>
+      <g class="core">${paths.map((p, n) => `<path class="${p.deep ? "deep" : ""}${n % 6 ? "" : " hot"}" d="${dStr(p)}"/>`).join("")}</g>
+      <g class="pads">${paths.map((p) => { const e = p.pts[p.pts.length - 1]; return p.pad ? `<circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="3"/>` : "<circle r='0'/>"; }).join("")}</g></svg>`;
+    const halos = layer.querySelectorAll(".halo path"), cores = layer.querySelectorAll(".core path"), pads = layer.querySelectorAll(".pads circle");
+    T = paths.map((p, n) => {
+      const dash = `${p.len.toFixed(1)} ${(p.len + 40).toFixed(1)}`;
+      [halos[n], cores[n]].forEach((el) => { el.style.strokeDasharray = dash; el.style.strokeDashoffset = p.len; el.style.visibility = "hidden"; });
+      return { ...p, y0: p.pts[0][1], els: [halos[n], cores[n]], pad: p.pad ? pads[n] : null, drawn: -1 };
+    });
+    /* gate: how far the network may grow once the screen's bottom edge reaches a given height */
+    const byY = [...T].sort((a, b) => a.y0 - b.y0);
+    let m = 0; gate = byY.map((p) => (m = Math.max(m, p.start + Math.min(p.len, 60)), [p.y0, m]));
+    if (!built) R = 0; built = true;
+    paint(true);
   };
-  if (!still) requestAnimationFrame(spinGear);
+  const targetR = () => {
+    if (still) return Infinity;
+    const front = window.scrollY + window.innerHeight * 0.92;
+    let lo = 0, hi = gate.length - 1, best = 0;
+    while (lo <= hi) { const mid = (lo + hi) >> 1; if (gate[mid][0] <= front) { best = gate[mid][1]; lo = mid + 1; } else hi = mid - 1; }
+    return best + 40;
+  };
+  const paint = (force) => {
+    for (const p of T) {
+      const d = Math.max(0, Math.min(p.len, R - p.start));
+      if (!force && Math.abs(d - p.drawn) < 0.2) continue;
+      p.drawn = d;
+      const vis = d > 0.3 ? "visible" : "hidden";
+      for (const el of p.els) { el.style.strokeDashoffset = p.len - d; el.style.visibility = vis; }
+      if (p.pad) p.pad.classList.toggle("on", d >= p.len - 0.5);
+    }
+  };
+  const tick = () => {
+    const t = targetR();
+    if (t === Infinity) { R = 1e9; paint(true); return; }
+    const diff = t - R;
+    if (Math.abs(diff) > 0.5) {
+      /* creep: never faster than a few pixels a frame, so a fast scroll still bleeds slowly */
+      R += Math.sign(diff) * Math.min(Math.abs(diff) * 0.035 + 1.2, diff > 0 ? 7 : 14);
+      paint(false);
+    }
+    requestAnimationFrame(tick);
+  };
+  let rt; const rebuild = () => { clearTimeout(rt); rt = setTimeout(buildTraces, 200); };
+  window.addEventListener("resize", rebuild);
+  if (window.ResizeObserver) { let lastH = 0; new ResizeObserver(() => { const h = document.documentElement.scrollHeight; if (Math.abs(h - lastH) > 40) { lastH = h; rebuild(); } }).observe(document.body); }
+  window.addEventListener("load", () => { buildTraces(); requestAnimationFrame(tick); });
+  if (document.fonts) document.fonts.ready.then(rebuild);
+
+  /* ---------- PLASMA BEHIND THE PHOTO ----------
+     Just a breathing cyan glow, like light off a plasma core. */
+  const pc = $("plasma"), ctx = pc.getContext("2d");
+  let PW = 0, PH = 0, plasmaOn = true;
+  const sizePlasma = () => {
+    const r = pc.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    PW = r.width; PH = r.height; pc.width = PW * dpr; pc.height = PH * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  const drawPlasma = (t) => {
+    const cx = PW / 2, cy = PH / 2, Rr = Math.min(PW, PH) / 2;
+    ctx.clearRect(0, 0, PW, PH);
+    ctx.globalCompositeOperation = "source-over";
+    const b = Math.sin(t / 1700), pulse = 1 + b * 0.05, k = 0.86 + b * 0.14;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Rr * pulse);
+    g.addColorStop(0, `rgba(34,211,238,${0.75 * k})`); g.addColorStop(0.3, `rgba(6,182,212,${0.5 * k})`); g.addColorStop(0.55, `rgba(8,145,178,${0.24 * k})`); g.addColorStop(0.8, `rgba(14,116,144,${0.08 * k})`); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, Rr * pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+  };
+  let lastP = 0;
+  const loopPlasma = (t) => { if (plasmaOn && t - lastP > 45) { lastP = t; drawPlasma(t); } requestAnimationFrame(loopPlasma); };
+  sizePlasma(); drawPlasma(0);
+  window.addEventListener("resize", sizePlasma);
+  if (window.IntersectionObserver) new IntersectionObserver((e) => { plasmaOn = e[0].isIntersecting; }).observe(pc);
+  if (!still) requestAnimationFrame(loopPlasma);
 
   /* ---------- REVEAL ON SCROLL ---------- */
   document.querySelectorAll(".band > .eyebrow, .big, .card, .huge").forEach((el) => el.classList.add("reveal"));
